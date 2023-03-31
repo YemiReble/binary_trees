@@ -1,24 +1,31 @@
 #include "binary_trees.h"
-int binary_tree_balance(const binary_tree_t *tree);
+int recurse_for_is_bst(const binary_tree_t *tree, int min, int max);
 size_t recurse_for_height(const binary_tree_t *tree);
+int binary_tree_balance(const binary_tree_t *tree);
+size_t binary_tree_height(const binary_tree_t *tree);
 int recurse_for_balance(const binary_tree_t *tree);
 /**
- * binary_tree_is_perfect - checks for perfect binary tree
- * @tree: pointer to the root node
- * Description: 16. Is perfect
- * Return: see below
- * 1. upon success, return 1
- * 2. upon fail, return 0
+ * binary_tree_is_avl - check if tree is AVL
+ * @tree: pointer to root of tree
+ *
+ * Return: 1 if valid AVL; 0 if not
  */
-int binary_tree_is_perfect(const binary_tree_t *tree)
+int binary_tree_is_avl(const binary_tree_t *tree)
 {
-	/* base case */
-	if (tree == NULL)
+	int balanced;
+
+	if (!tree)
 		return (0);
 
-	/* check if all trees/subtrees have balance factor of 0 */
-	if (recurse_for_balance(tree) == 0)
-		return (1);
+	/* check if tree is ordered */
+	if (recurse_for_is_bst(tree, INT_MIN, INT_MAX) == 1)
+	{
+		/* determine balance factor */
+		balanced = recurse_for_balance(tree); /* 0: balanced; 1: unbalanced */
+		if (balanced == 0)
+			return (1); /* tree is AVL */
+	}
+	/* tree is not AVL */
 	return (0);
 }
 /**
@@ -37,7 +44,7 @@ int recurse_for_balance(const binary_tree_t *tree)
 	/* take balance factor of every tree/subtree */
 	balFactor = binary_tree_balance(tree);
 
-	if (balFactor != 0)
+	if (balFactor < -1 || balFactor > 1)
 		return (balFactor);
 
 	return (recurse_for_balance(tree->left) || recurse_for_balance(tree->right));
@@ -58,7 +65,9 @@ int binary_tree_balance(const binary_tree_t *tree)
 
 	/* base case */
 	if (tree == NULL)
+	{
 		return (0);
+	}
 
 	/* if given node has no balance factor */
 	if ((tree->left == NULL) && (tree->right == NULL))
@@ -93,4 +102,23 @@ size_t recurse_for_height(const binary_tree_t *tree)
 		return (heightL + 1);
 	else
 		return (heightR + 1);
+}
+/**
+ * recurse_for_is_bst - recursive check for BST
+ * @tree: pointer to root node
+ * @min: current minimum
+ * @max: current maximum
+ *
+ * Return: 1 if BST; 0 if not
+ */
+int recurse_for_is_bst(const binary_tree_t *tree, int min, int max)
+{
+	if (!tree) /* if either pointer is NULL */
+		return (1);
+
+	if ((tree->n < min) || (tree->n > max))
+		return (0);
+
+	return (recurse_for_is_bst(tree->left, min, tree->n - 1)
+		&& recurse_for_is_bst(tree->right, tree->n + 1, max));
 }
